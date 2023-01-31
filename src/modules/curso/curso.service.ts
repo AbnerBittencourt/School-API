@@ -1,26 +1,70 @@
 import { Injectable } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common/exceptions';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
+import { Curso } from './entities/curso.entity';
 
 @Injectable()
 export class CursoService {
-  create(createCursoDto: CreateCursoDto) {
-    return 'This action adds a new curso';
+  
+  constructor(
+    @InjectRepository(Curso)
+    private readonly cursoRepository: Repository<Curso>
+  ) {}
+
+  async create(createCursoDTO: CreateCursoDto) {
+    const createdCurso = this.cursoRepository.create({
+      ...createCursoDTO
+    });
+    
+    return await this.cursoRepository.save(createdCurso);
+  }
+
+  async update(id: number, updateCursoDTO: UpdateCursoDto) {
+    const curso = await this.cursoRepository.preload({
+      id,
+      ...updateCursoDTO,
+    });
+
+    if (!curso)
+      throw new NotFoundException(`O curso ${id} não foi encontrado.`);
+
+    return this.cursoRepository.save(curso);
   }
 
   findAll() {
-    return `This action returns all curso`;
+    return this.cursoRepository.find({
+      relations: {
+        matriculas: true
+      },
+      order: { id: 'ASC'}
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} curso`;
-  }
+  async findOne(id: number) {
+    const curso = await this.cursoRepository.findOne({
+      where: { id },
+      relations: {
+        matriculas: true
+      }
+    });
 
-  update(id: number, updateCursoDto: UpdateCursoDto) {
-    return `This action updates a #${id} curso`;
+    if (!curso)
+      throw new NotFoundException(`O curso ${id} não foi encontrado.`);
+      
+    return curso;
   }
+  
+  async remove(id: number) {
+    const curso = await this.cursoRepository.findOne({
+      where: { id },
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} curso`;
+    if (!curso)
+      throw new NotFoundException(`O curso ${id} não foi encontrado.`);
+
+    return this.cursoRepository.remove(curso);
   }
 }

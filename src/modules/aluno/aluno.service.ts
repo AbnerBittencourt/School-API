@@ -1,26 +1,70 @@
 import { Injectable } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common/exceptions';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateAlunoDto } from './dto/create-aluno.dto';
 import { UpdateAlunoDto } from './dto/update-aluno.dto';
+import { Aluno } from './entities/aluno.entity';
 
 @Injectable()
 export class AlunoService {
-  create(createAlunoDto: CreateAlunoDto) {
-    return 'This action adds a new aluno';
+
+  constructor(
+    @InjectRepository(Aluno)
+    private readonly alunoRepository: Repository<Aluno>
+  ) {}
+
+  async create(createAlunoDTO: CreateAlunoDto) {
+    const createdAluno = this.alunoRepository.create({
+      ...createAlunoDTO
+    });
+    
+    return await this.alunoRepository.save(createdAluno);
+  }
+
+  async update(id: number, updateAlunoDTO: UpdateAlunoDto) {
+    const aluno = await this.alunoRepository.preload({
+      id,
+      ...updateAlunoDTO,
+    });
+
+    if (!aluno)
+      throw new NotFoundException(`O aluno ${id} não foi encontrado.`);
+
+    return this.alunoRepository.save(aluno);
   }
 
   findAll() {
-    return `This action returns all aluno`;
+    return this.alunoRepository.find({
+      relations: {
+        matriculas: true
+      },
+      order: { id: 'ASC'}
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} aluno`;
-  }
+  async findOne(id: number) {
+    const aluno = await this.alunoRepository.findOne({
+      where: { id },
+      relations: {
+        matriculas: true
+      }
+    });
 
-  update(id: number, updateAlunoDto: UpdateAlunoDto) {
-    return `This action updates a #${id} aluno`;
+    if (!aluno)
+      throw new NotFoundException(`O aluno ${id} não foi encontrado.`);
+      
+    return aluno;
   }
+  
+  async remove(id: number) {
+    const aluno = await this.alunoRepository.findOne({
+      where: { id },
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} aluno`;
+    if (!aluno)
+      throw new NotFoundException(`O aluno ${id} não foi encontrado.`);
+
+    return this.alunoRepository.remove(aluno);
   }
 }

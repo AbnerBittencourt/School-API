@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { AlunoService } from './aluno.service';
 import { CreateAlunoDto } from './dto/create-aluno.dto';
 import { UpdateAlunoDto } from './dto/update-aluno.dto';
@@ -12,7 +12,7 @@ export class AlunoController {
     return this.alunoService.create(createAlunoDto);
   }
 
-  @Get()
+  @Get('list')
   findAll() {
     return this.alunoService.findAll();
   }
@@ -22,7 +22,7 @@ export class AlunoController {
     return this.alunoService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateAlunoDto: UpdateAlunoDto) {
     return this.alunoService.update(+id, updateAlunoDto);
   }

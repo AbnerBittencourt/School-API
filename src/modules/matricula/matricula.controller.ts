@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { MatriculaService } from './matricula.service';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { UpdateMatriculaDto } from './dto/update-matricula.dto';
+import { MatriculaService } from './matricula.service';
 
 @Controller('matricula')
 export class MatriculaController {
@@ -12,7 +12,7 @@ export class MatriculaController {
     return this.matriculaService.create(createMatriculaDto);
   }
 
-  @Get()
+  @Get('list')
   findAll() {
     return this.matriculaService.findAll();
   }
@@ -22,7 +22,7 @@ export class MatriculaController {
     return this.matriculaService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateMatriculaDto: UpdateMatriculaDto) {
     return this.matriculaService.update(+id, updateMatriculaDto);
   }

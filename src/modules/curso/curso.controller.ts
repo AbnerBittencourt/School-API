@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { CursoService } from './curso.service';
 import { CreateCursoDto } from './dto/create-curso.dto';
 import { UpdateCursoDto } from './dto/update-curso.dto';
 
 @Controller('curso')
 export class CursoController {
+  
   constructor(private readonly cursoService: CursoService) {}
 
   @Post()
@@ -12,7 +13,7 @@ export class CursoController {
     return this.cursoService.create(createCursoDto);
   }
 
-  @Get()
+  @Get('list')
   findAll() {
     return this.cursoService.findAll();
   }
@@ -22,7 +23,7 @@ export class CursoController {
     return this.cursoService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateCursoDto: UpdateCursoDto) {
     return this.cursoService.update(+id, updateCursoDto);
   }
