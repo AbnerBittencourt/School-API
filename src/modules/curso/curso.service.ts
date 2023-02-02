@@ -65,6 +65,8 @@ export class CursoService {
     if (!curso)
       throw new NotFoundException(`O curso ${id} não foi encontrado.`);
 
+     
+
     return this.cursoRepository.remove(curso);
   }
 }

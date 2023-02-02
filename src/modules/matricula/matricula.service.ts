@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { AlunoService } from '../aluno/aluno.service';
 import { CursoService } from '../curso/curso.service';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
@@ -15,10 +15,12 @@ export class MatriculaService {
     @InjectRepository(Matricula)
     private readonly matriculaRepository: Repository<Matricula>,
     private readonly alunoService: AlunoService,
-    private readonly cursoService: CursoService
+    private readonly cursoService: CursoService,
+    private readonly dataSource: DataSource
   ) {}
 
   async create(createMatriculaDTO: CreateMatriculaDto) {
+    createMatriculaDTO = await this.preloadData(createMatriculaDTO);
     const createdMatricula = this.matriculaRepository.create({
       ...createMatriculaDTO
     });
@@ -33,7 +35,7 @@ export class MatriculaService {
     });
 
     if (!matricula)
-      throw new NotFoundException(`O matricula ${id} não foi encontrado.`);
+      throw new NotFoundException(`A matricula ${id} não foi encontrada.`);
 
     return this.matriculaRepository.save(matricula);
   }
@@ -58,18 +60,32 @@ export class MatriculaService {
     });
 
     if (!matricula)
-      throw new NotFoundException(`O matricula ${id} não foi encontrado.`);
+      throw new NotFoundException(`A matricula ${id} não foi encontrada.`);
       
     return matricula;
   }
   
+  async findMatriculaByCurso(cursoId: number) {
+
+    const matricula = await this.dataSource.query(`SELECT * FROM CURSO_ALUNO WHERE curso.id = 1`, [cursoId])
+    if (!matricula)
+      throw new NotFoundException(`Não há matrículas deste curso.`);
+    
+    //   await this.dataSource.createQueryBuilder()
+    // .select()
+    // .from(Curso, "curso")
+    // .where("curso.id = :id", { id: cursoId })
+    // .getOne()
+    return matricula;
+  }
+
   async remove(id: number) {
     const matricula = await this.matriculaRepository.findOne({
       where: { id },
     });
 
     if (!matricula)
-      throw new NotFoundException(`O matricula ${id} não foi encontrado.`);
+      throw new NotFoundException(`A matricula ${id} não foi encontrada.`);
 
     return this.matriculaRepository.remove(matricula);
   }

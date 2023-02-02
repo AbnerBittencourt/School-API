@@ -22,6 +22,11 @@ export class MatriculaController {
     return this.matriculaService.findOne(+id);
   }
 
+  @Get('curso/:id')
+  findMatriculaByCurso(@Param('id') id: string) {
+    return this.matriculaService.findMatriculaByCurso(+id);
+  }
+
   @Put(':id')
   update(@Param('id') id: string, @Body() updateMatriculaDto: UpdateMatriculaDto) {
     return this.matriculaService.update(+id, updateMatriculaDto);
