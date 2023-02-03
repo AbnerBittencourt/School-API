@@ -10,15 +10,27 @@ import { MatriculaModule } from './modules/matricula/matricula.module';
   imports: [
     TypeOrmModule.forRoot({
     type: 'postgres',
-    host: 'db',
+    host: 'localhost',
     port: 5432,
     username: 'postgres',
     password: 'postgres',
     database: 'School',
     autoLoadEntities: true,
-    synchronize: false
-  }), CursoModule, MatriculaModule, AlunoModule],
+    synchronize: true
+  }), 
+    CursoModule, MatriculaModule, AlunoModule],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
+//Docker
+// TypeOrmModule.forRoot({
+//   type: 'postgres',
+//   host: 'db',
+//   port: 5432,
+//   username: 'postgres',
+//   password: 'postgres',
+//   database: 'School',
+//   autoLoadEntities: true,
+//   synchronize: false
