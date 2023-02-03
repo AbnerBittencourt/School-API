@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { AlunoService } from '../aluno/aluno.service';
-import { CursoService } from '../curso/curso.service';
+import { Aluno } from '../aluno/entities/aluno.entity';
+import { Curso } from '../curso/entities/curso.entity';
 import { CreateMatriculaDto } from './dto/create-matricula.dto';
 import { UpdateMatriculaDto } from './dto/update-matricula.dto';
 import { Matricula } from './entities/matricula.entity';
@@ -14,17 +14,19 @@ export class MatriculaService {
   constructor(
     @InjectRepository(Matricula)
     private readonly matriculaRepository: Repository<Matricula>,
-    private readonly alunoService: AlunoService,
-    private readonly cursoService: CursoService,
-    private readonly dataSource: DataSource
+    @InjectRepository(Curso)
+    private readonly cursoRepository: Repository<Matricula>,
+    @InjectRepository(Aluno)
+    private readonly alunoRepository: Repository<Matricula>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createMatriculaDTO: CreateMatriculaDto) {
     createMatriculaDTO = await this.preloadData(createMatriculaDTO);
     const createdMatricula = this.matriculaRepository.create({
-      ...createMatriculaDTO
+      ...createMatriculaDTO,
     });
-    
+
     return await this.matriculaRepository.save(createdMatricula);
   }
 
@@ -44,9 +46,9 @@ export class MatriculaService {
     return this.matriculaRepository.find({
       relations: {
         aluno: true,
-        curso: true
+        curso: true,
       },
-      order: { id: 'ASC'}
+      order: { id: 'ASC' },
     });
   }
 
@@ -55,27 +57,33 @@ export class MatriculaService {
       where: { id },
       relations: {
         aluno: true,
-        curso: true
-      }
+        curso: true,
+      },
     });
 
     if (!matricula)
       throw new NotFoundException(`A matricula ${id} não foi encontrada.`);
-      
+
     return matricula;
   }
-  
-  async findMatriculaByCurso(cursoId: number) {
 
-    const matricula = await this.dataSource.query(`SELECT * FROM CURSO_ALUNO WHERE curso.id = 1`, [cursoId])
-    if (!matricula)
-      throw new NotFoundException(`Não há matrículas deste curso.`);
+  async findMatriculaByCurso(cursoId: number) {
+    const matricula = await this.dataSource
+      .getRepository(Matricula)
+      .createQueryBuilder('curso_aluno')
+      .where('curso_aluno.cursoId = :cursoId', { cursoId: cursoId })
+      .getOne();
     
-    //   await this.dataSource.createQueryBuilder()
-    // .select()
-    // .from(Curso, "curso")
-    // .where("curso.id = :id", { id: cursoId })
-    // .getOne()
+    return matricula;
+  }
+
+  async findMatriculaByAluno(alunoId: number) {
+    const matricula = await this.dataSource
+      .getRepository(Matricula)
+      .createQueryBuilder('curso_aluno')
+      .where('curso_aluno.alunoId = :alunoId', { alunoId: alunoId })
+      .getOne();
+    
     return matricula;
   }
 
@@ -91,13 +99,16 @@ export class MatriculaService {
   }
 
   private async preloadData(createMatriculaDTO: CreateMatriculaDto): Promise<CreateMatriculaDto> {
+    const alunoExists = await this.alunoRepository.findOne({
+      where: { id:  createMatriculaDTO.aluno.id}
+    });
 
-    const alunoExists = await this.alunoService.findOne(createMatriculaDTO.aluno.id);
-    const cursoExists = await this.cursoService.findOne(createMatriculaDTO.curso.id);
+    const cursoExists = await this.cursoRepository.findOne({
+      where: { id:  createMatriculaDTO.curso.id}
+    });
 
-    if (alunoExists && cursoExists)
-      return createMatriculaDTO;
+    if (alunoExists && cursoExists) return createMatriculaDTO;
 
-    throw new NotFoundException(`Dados incorretos.`);;
+    throw new NotFoundException(`Dados incorretos.`);
   }
 }

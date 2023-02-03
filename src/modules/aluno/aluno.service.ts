@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { NotFoundException } from '@nestjs/common/exceptions';
+import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { MatriculaService } from '../matricula/matricula.service';
 import { CreateAlunoDto } from './dto/create-aluno.dto';
 import { UpdateAlunoDto } from './dto/update-aluno.dto';
 import { Aluno } from './entities/aluno.entity';
@@ -11,7 +12,8 @@ export class AlunoService {
 
   constructor(
     @InjectRepository(Aluno)
-    private readonly alunoRepository: Repository<Aluno>
+    private readonly alunoRepository: Repository<Aluno>,
+    private readonly matriculaService: MatriculaService
   ) {}
 
   async create(createAlunoDTO: CreateAlunoDto) {
@@ -61,6 +63,11 @@ export class AlunoService {
     const aluno = await this.alunoRepository.findOne({
       where: { id },
     });
+
+    const matricula = this.matriculaService.findMatriculaByAluno(id);
+
+    if(matricula)
+      throw new BadRequestException("Este aluno não pode ser removido pois ele está matriculado em um curso.")
 
     if (!aluno)
       throw new NotFoundException(`O aluno ${id} não foi encontrado.`);

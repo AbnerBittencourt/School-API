@@ -7,7 +7,7 @@ import { CursoModule } from './modules/curso/curso.module';
 import { MatriculaModule } from './modules/matricula/matricula.module';
 
 @Module({
-  imports: [ CursoModule, AlunoModule, MatriculaModule,
+  imports: [
     TypeOrmModule.forRoot({
     type: 'postgres',
     host: 'localhost',
@@ -17,7 +17,7 @@ import { MatriculaModule } from './modules/matricula/matricula.module';
     database: 'School',
     autoLoadEntities: true,
     synchronize: true
-  })],
+  }), CursoModule, MatriculaModule, AlunoModule],
   controllers: [AppController],
   providers: [AppService],
 })
