@@ -10,13 +10,13 @@ import { MatriculaModule } from './modules/matricula/matricula.module';
   imports: [
     TypeOrmModule.forRoot({
     type: 'postgres',
-    host: 'localhost',
+    host: 'db',
     port: 5432,
     username: 'postgres',
     password: 'postgres',
     database: 'School',
     autoLoadEntities: true,
-    synchronize: true
+    synchronize: false
   }), CursoModule, MatriculaModule, AlunoModule],
   controllers: [AppController],
   providers: [AppService],

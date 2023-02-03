@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  app:
+    build: .
+    entrypoint: .docker/entrypoint.sh
+    container_name: api-vr-scholl
+    tty: true
+    ports: 
+      - "3000:3000"
+    volumes:
+      - .:/home/node/app
+    depends_on:
+      - db
+
+  db:
+    build: .docker/postgres
+    container_name: db-vr-scholl 
+    restart: always
+    tty: true
+    ports:
+      - "5432:5432" 
+    volumes:
+      - .docker/dbdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=School
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-vr
+    tty: true
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
