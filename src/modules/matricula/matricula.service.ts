@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotFoundException } from '@nestjs/common/exceptions';
+import { BadRequestException, NotFoundException } from '@nestjs/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Aluno } from '../aluno/entities/aluno.entity';
@@ -22,6 +22,9 @@ export class MatriculaService {
   ) {}
 
   async create(createMatriculaDTO: CreateMatriculaDto) {
+
+    this.checkData(createMatriculaDTO.aluno.id);
+    
     createMatriculaDTO = await this.preloadData(createMatriculaDTO);
     const createdMatricula = this.matriculaRepository.create({
       ...createMatriculaDTO,
@@ -29,8 +32,17 @@ export class MatriculaService {
 
     return await this.matriculaRepository.save(createdMatricula);
   }
+  
+  private checkData(id: number) {
+    const matriculas = this.findMatriculaByAluno(id);
+    if(matriculas)
+      throw new BadRequestException("Este aluno já está matriculado em um curso");
+  }
 
   async update(id: number, updateMatriculaDTO: UpdateMatriculaDto) {
+    
+    this.checkData(id);
+
     const matricula = await this.matriculaRepository.preload({
       id,
       ...updateMatriculaDTO,
