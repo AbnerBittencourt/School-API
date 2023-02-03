@@ -64,9 +64,9 @@ export class AlunoService {
       where: { id },
     });
 
-    const matricula = this.matriculaService.findMatriculaByAluno(id);
+    const matriculas = await this.matriculaService.findMatriculaByAluno(id);
 
-    if(matricula)
+    if(matriculas.length > 0)
       throw new BadRequestException("Este aluno não pode ser removido pois ele está matriculado em um curso.")
 
     if (!aluno)

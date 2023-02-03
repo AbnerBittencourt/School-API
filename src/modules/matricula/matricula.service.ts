@@ -68,23 +68,23 @@ export class MatriculaService {
   }
 
   async findMatriculaByCurso(cursoId: number) {
-    const matricula = await this.dataSource
+    const matriculas = await this.dataSource
       .getRepository(Matricula)
       .createQueryBuilder('curso_aluno')
       .where('curso_aluno.cursoId = :cursoId', { cursoId: cursoId })
-      .getOne();
+      .getMany();
     
-    return matricula;
+    return matriculas;
   }
 
   async findMatriculaByAluno(alunoId: number) {
-    const matricula = await this.dataSource
+    const matriculas = await this.dataSource
       .getRepository(Matricula)
       .createQueryBuilder('curso_aluno')
       .where('curso_aluno.alunoId = :alunoId', { alunoId: alunoId })
-      .getOne();
+      .getMany();
     
-    return matricula;
+    return matriculas;
   }
 
   async remove(id: number) {

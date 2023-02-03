@@ -64,9 +64,9 @@ export class CursoService {
       where: { id },
     });
     
-    const matricula = this.matriculaService.findMatriculaByCurso(id);
+    const matriculas = await this.matriculaService.findMatriculaByCurso(id);
 
-    if(matricula)
+    if(matriculas.length > 0)
       throw new BadRequestException("Este curso não pode ser removido pois há matrículas vinculadas.")
       
     if (!curso)
